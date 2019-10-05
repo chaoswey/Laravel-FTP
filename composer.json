@@ -17,7 +17,6 @@
   ],
   "require": {
     "php": "^7.2",
-    "ext-ftp": "*",
     "illuminate/support": "^6.0"
   },
   "autoload": {
