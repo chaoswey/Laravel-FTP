@@ -1,16 +1,17 @@
 <?php namespace Anchu\Ftp;
 
-class Ftp {
+class Ftp
+{
 
-	/**
-	 * type name for files
-	 */
-	const TYPE_FILE = 'file';
+    /**
+     * type name for files
+     */
+    const TYPE_FILE = 'file';
 
-	/**
-	 * type name for directories
-	 */
-	const TYPE_DIR = 'directory';
+    /**
+     * type name for directories
+     */
+    const TYPE_DIR = 'directory';
 
     /**
      * The active FTP connection resource id.
@@ -20,7 +21,7 @@ class Ftp {
     /**
      * Create a new ftp connection instance.
      *
-     * @param  config
+     * @param config
      * @return void
      */
     public function __construct($config)
@@ -38,12 +39,15 @@ class Ftp {
      */
     public function connect($config)
     {
-        if(!isset($config['port']))
+        if (!isset($config['port'])) {
             $config['port'] = 21;
-        if(!isset($config['timeout']))
+        }
+        if (!isset($config['timeout'])) {
             $config['timeout'] = 90;
-        if (!isset($config['secure']))
+        }
+        if (!isset($config['secure'])) {
             $config['secure'] = false;
+        }
 
         if ($config['secure']) {
             $connectionId = ftp_ssl_connect($config['host'], $config['port'], $config['timeout']);
@@ -55,8 +59,9 @@ class Ftp {
             ftp_pasv($connectionId, $config['passive']);
         }
 
-        if ((!$connectionId) || (!$loginResponse))
+        if ((!$connectionId) || (!$loginResponse)) {
             throw new \Exception('FTP connection has failed!');
+        }
 
         return $connectionId;
     }
@@ -64,7 +69,7 @@ class Ftp {
     /**
      * Disconnect active connection.
      *
-     * @param  config
+     * @param config
      * @return void
      */
     public function disconnect()
@@ -81,14 +86,15 @@ class Ftp {
      */
     public function getDirListing($directory = '.', $parameters = null)
     {
-        if($parameters)
+        if ($parameters) {
             $directory = $parameters . '  ' . $directory;
+        }
 
         try {
             $contentsArray = ftp_nlist($this->connectionId, $directory);
 
             return $contentsArray;
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return false;
         }
 
@@ -120,7 +126,7 @@ class Ftp {
                     $item['month'],
                     $item['day'],
                     $item['time']
-                ) = $chunks;
+                    ) = $chunks;
 
                 $item['type'] = $chunks[0]{0} === 'd' ? static::TYPE_DIR : static::TYPE_FILE;
                 array_splice($chunks, 0, 8);
@@ -144,11 +150,12 @@ class Ftp {
     public function makeDir($directory)
     {
         try {
-            if (ftp_mkdir($this->connectionId, $directory))
+            if (ftp_mkdir($this->connectionId, $directory)) {
                 return true;
-            else
+            } else {
                 return false;
-        } catch(\Exception $e) {
+            }
+        } catch (\Exception $e) {
             return false;
         }
     }
@@ -162,11 +169,12 @@ class Ftp {
     public function changeDir($directory)
     {
         try {
-            if(ftp_chdir($this->connectionId, $directory))
+            if (ftp_chdir($this->connectionId, $directory)) {
                 return true;
-            else
+            } else {
                 return false;
-        } catch(\Exception $e) {
+            }
+        } catch (\Exception $e) {
             return false;
         }
     }
@@ -181,10 +189,11 @@ class Ftp {
     {
         $path_parts = pathinfo($file);
 
-        if (!isset($path_parts['extension']))
+        if (!isset($path_parts['extension'])) {
             return FTP_BINARY;
-        else
+        } else {
             return $this->findTransferModeForExtension($path_parts['extension']);
+        }
 
 
     }
@@ -198,18 +207,56 @@ class Ftp {
     public function findTransferModeForExtension($extension)
     {
         $extensionArray = array(
-            'am', 'asp', 'bat', 'c', 'cfm', 'cgi', 'conf',
-            'cpp', 'css', 'dhtml', 'diz', 'h', 'hpp', 'htm',
-            'html', 'in', 'inc', 'js', 'm4', 'mak', 'nfs',
-            'nsi', 'pas', 'patch', 'php', 'php3', 'php4', 'php5',
-            'phtml', 'pl', 'po', 'py', 'qmail', 'sh', 'shtml',
-            'sql', 'tcl', 'tpl', 'txt', 'vbs', 'xml', 'xrc', 'csv'
+            'am',
+            'asp',
+            'bat',
+            'c',
+            'cfm',
+            'cgi',
+            'conf',
+            'cpp',
+            'css',
+            'dhtml',
+            'diz',
+            'h',
+            'hpp',
+            'htm',
+            'html',
+            'in',
+            'inc',
+            'js',
+            'm4',
+            'mak',
+            'nfs',
+            'nsi',
+            'pas',
+            'patch',
+            'php',
+            'php3',
+            'php4',
+            'php5',
+            'phtml',
+            'pl',
+            'po',
+            'py',
+            'qmail',
+            'sh',
+            'shtml',
+            'sql',
+            'tcl',
+            'tpl',
+            'txt',
+            'vbs',
+            'xml',
+            'xrc',
+            'csv'
         );
 
-        if(in_array(strtolower($extension),$extensionArray))
+        if (in_array(strtolower($extension), $extensionArray)) {
             return FTP_ASCII;
-        else
+        } else {
             return FTP_BINARY;
+        }
     }
 
     /**
@@ -220,18 +267,19 @@ class Ftp {
      * @param $mode
      * @return bool
      */
-    public function uploadFile($fileFrom, $fileTo, $mode=null)
+    public function uploadFile($fileFrom, $fileTo, $mode = null)
     {
-    	if($mode == null) {
-           $mode = $this->findTransferModeForFile($fileFrom);
+        if ($mode == null) {
+            $mode = $this->findTransferModeForFile($fileFrom);
         }
 
         try {
-            if(ftp_put($this->connectionId, $fileTo, $fileFrom, $mode))
+            if (ftp_put($this->connectionId, $fileTo, $fileFrom, $mode)) {
                 return true;
-            else
+            } else {
                 return false;
-        } catch(\Exception $e) {
+            }
+        } catch (\Exception $e) {
             return false;
         }
     }
@@ -244,30 +292,29 @@ class Ftp {
      * @param $mode
      * @return bool
      */
-    public function downloadFile($fileFrom, $fileTo, $mode=null)
+    public function downloadFile($fileFrom, $fileTo, $mode = null)
     {
-        if($mode == null) {
-        	$fileInfos = explode('.', $fileFrom);
-        	$extension = end($fileInfos);
-           	$mode = $this->findTransferModeForExtension($extension);
+        if ($mode == null) {
+            $fileInfos = explode('.', $fileFrom);
+            $extension = end($fileInfos);
+            $mode = $this->findTransferModeForExtension($extension);
         }
 
         try {
-            if (is_resource($fileTo))
-            {
-                if (ftp_fget($this->connectionId, $fileTo, $fileFrom, $mode, 0))
+            if (is_resource($fileTo)) {
+                if (ftp_fget($this->connectionId, $fileTo, $fileFrom, $mode, 0)) {
                     return true;
-                else
+                } else {
                     return false;
-            }
-            else
-            {
-                if (ftp_get($this->connectionId, $fileTo, $fileFrom, $mode, 0))
+                }
+            } else {
+                if (ftp_get($this->connectionId, $fileTo, $fileFrom, $mode, 0)) {
                     return true;
-                else
+                } else {
                     return false;
+                }
             }
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return false;
         }
     }
@@ -286,14 +333,15 @@ class Ftp {
             $result = $this->downloadFile($fileFrom, $fileTo);
             $data = ob_get_contents();
             ob_end_clean();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return false;
         }
 
-        if($result)
+        if ($result) {
             return $data;
-        else
+        } else {
             return $result;
+        }
     }
 
     /**
@@ -305,7 +353,7 @@ class Ftp {
     {
         try {
             return ftp_cdup($this->connectionId);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return false;
         }
     }
@@ -321,7 +369,7 @@ class Ftp {
     {
         try {
             return ftp_chmod($this->connectionId, $mode, $filename);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return false;
         }
     }
@@ -336,7 +384,7 @@ class Ftp {
     {
         try {
             return ftp_delete($this->connectionId, $path);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return false;
         }
     }
@@ -350,7 +398,7 @@ class Ftp {
     {
         try {
             return ftp_pwd($this->connectionId);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return false;
         }
     }
@@ -365,69 +413,71 @@ class Ftp {
     public function rename($oldName, $newName)
     {
         try {
-        return ftp_rename($this->connectionId, $oldName, $newName);
-        } catch(\Exception $e) {
+            return ftp_rename($this->connectionId, $oldName, $newName);
+        } catch (\Exception $e) {
             return false;
         }
     }
 
-	/**
-	 * Deletes the folder specified by path from the FTP server.
-	 *
-	 * @param $directory
-	 * @param bool $recursive
-	 * @return bool
-	 */
-	public function removeDir($directory, $recursive = false)
-	{
-		// if recursively check whether the path is a folder and truncate it
-		if ($recursive === true) {
-			if (!$this->truncateDir($directory)) {
-				return false;
-			}
-		}
+    /**
+     * Deletes the folder specified by path from the FTP server.
+     *
+     * @param $directory
+     * @param bool $recursive
+     * @return bool
+     */
+    public function removeDir($directory, $recursive = false)
+    {
+        // if recursively check whether the path is a folder and truncate it
+        if ($recursive === true) {
+            if (!$this->truncateDir($directory)) {
+                return false;
+            }
+        }
 
-		// delete the directory itself
-		try {
-			return ftp_rmdir($this->connectionId, $directory);
-		} catch(\Exception $e) {
-			return false;
-		}
-	}
+        // delete the directory itself
+        try {
+            return ftp_rmdir($this->connectionId, $directory);
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
 
-	/**
-	 * delete all files from given path
-	 *
-	 * @param $directory
-	 * @return bool
-	 */
-	public function truncateDir($directory)
-	{
-		$entries = $this->getDirListingDetailed($directory);
-		foreach ($entries as $name => $entry) {
+    /**
+     * delete all files from given path
+     *
+     * @param $directory
+     * @return bool
+     */
+    public function truncateDir($directory)
+    {
+        $entries = $this->getDirListingDetailed($directory);
+        foreach ($entries as $name => $entry) {
 
-			// ignore directories
-			if ($name === '.' || $name === '..') {
-				continue;
-			}
+            // ignore directories
+            if ($name === '.' || $name === '..') {
+                continue;
+            }
 
-			$fullPath = $directory . '/' . $name;
+            $fullPath = $directory . '/' . $name;
 
-			// delete directory recursively
-			if ($entry['type'] === static::TYPE_DIR) {
-				$this->removeDir($fullPath, true);
+            // delete directory recursively
+            if ($entry['type'] === static::TYPE_DIR) {
+                $this->removeDir($fullPath, true);
 
-				// delete file and return false if it failed
-			} else if ($entry['type'] === static::TYPE_FILE) {
-				if (!$this->delete($fullPath)) {
-					return false;
-				}
-			}
+                // delete file and return false if it failed
+            } else {
+                if ($entry['type'] === static::TYPE_FILE) {
+                    if (!$this->delete($fullPath)) {
+                        return false;
+                    }
+                }
+            }
 
-		}
+        }
 
-		return true;
-	}
+        return true;
+    }
 
     /**
      * Returns the size of the given file
@@ -439,7 +489,7 @@ class Ftp {
     {
         try {
             return ftp_size($this->connectionId, $remoteFile);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return false;
         }
     }
@@ -454,7 +504,7 @@ class Ftp {
     {
         try {
             return ftp_mdtm($this->connectionId, $remoteFile);
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return false;
         }
     }

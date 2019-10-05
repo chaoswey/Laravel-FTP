@@ -1,6 +1,7 @@
 <?php namespace Anchu\Ftp;
 
-class FtpManager {
+class FtpManager
+{
 
     /**
      * The application instance.
@@ -19,7 +20,7 @@ class FtpManager {
     /**
      * Create a new FTP instance.
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param \Illuminate\Foundation\Application $app
      * @return void
      */
     public function __construct(\Illuminate\Foundation\Application $app)
@@ -40,7 +41,7 @@ class FtpManager {
     /**
      * Get the configuration for a connection.
      *
-     * @param  string  $name
+     * @param string $name
      * @return array
      *
      * @throws \InvalidArgumentException
@@ -54,8 +55,7 @@ class FtpManager {
         // If the configuration doesn't exist, we'll throw an exception and bail.
         $connections = $this->app['config']['ftp.connections'];
 
-        if (is_null($config = array_get($connections, $name)))
-        {
+        if (is_null($config = \Illuminate\Support\Arr::get($connections, $name))) {
             throw new \InvalidArgumentException("Ftp [$name] not configured.");
         }
 
@@ -65,7 +65,7 @@ class FtpManager {
     /**
      * Make the FTP connection instance.
      *
-     * @param  string  $name
+     * @param string $name
      * @return \Anchu\Ftp\Ftp
      */
     protected function makeConnection($name)
@@ -77,7 +77,7 @@ class FtpManager {
     /**
      * Get a FTP connection instance.
      *
-     * @param  string  $name
+     * @param string $name
      */
     public function connection($name = null)
     {
@@ -85,8 +85,7 @@ class FtpManager {
 
         // If we haven't created this connection, we'll create it based on the config
         // provided in the application.
-        if ( ! isset($this->connections[$name]))
-        {
+        if (!isset($this->connections[$name])) {
             $this->connections[$name] = $this->makeConnection($name);
         }
 
@@ -96,15 +95,14 @@ class FtpManager {
     /**
      * Disconnect from the given ftp.
      *
-     * @param  string  $name
+     * @param string $name
      * @return void
      */
     public function disconnect($name = null)
     {
         $name = $name ?: $this->getDefaultConnection();
 
-        if ($this->connections[$name])
-        {
+        if ($this->connections[$name]) {
             $this->connections[$name]->disconnect();
             unset($this->connections[$name]);
         }
@@ -113,7 +111,7 @@ class FtpManager {
     /**
      * Reconnect to the given ftp.
      *
-     * @param  string  $name
+     * @param string $name
      * @return \Anchu\Ftp\Ftp
      */
     public function reconnect($name = null)
